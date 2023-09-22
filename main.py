@@ -138,7 +138,6 @@ def main():
         window.blit(health_label, (10, 35))
         window.blit(lifes_label, (width - lifes_label.get_width() - (heart_img.get_width() + 10) * 3, 35, ),)
         window.blit(cord_label, (10, 65))
-
         for live in range(player.lives + 1):
             window.blit(heart_img, (width - heart_img.get_width() * live - (10 * live), 42))
 
@@ -154,6 +153,7 @@ def main():
         clock.tick(fps)
         redraw_window()
 
+        # Verifica si el juego continúa
         if player.health == 0 and player.lives == 0:
             lost = True
             lost_count +=1
