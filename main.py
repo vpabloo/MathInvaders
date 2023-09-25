@@ -11,7 +11,7 @@ background = pygame.transform.scale(
     pygame.image.load("images/wallpaper.jpg"), (1080, 686)
 )
 rocket_img = pygame.transform.scale(pygame.image.load("images/rocket.png"), (64, 64))
-laser_img = pygame.image.load("images/laser.png")
+laser_img = pygame.transform.scale(pygame.image.load("images/laser.png"), (16, 16))
 star_img = pygame.transform.scale(pygame.image.load("images/star.png"), (64, 64))
 heart_img = pygame.transform.scale(pygame.image.load("images/heart.png"), (15, 15))
 
@@ -26,19 +26,76 @@ main_font = pygame.font.Font("VT323-Regular.ttf", 30)
 menu_font = pygame.font.Font("VT323-Regular.ttf", 120)
 
 
+# Laser
+class Laser:
+    def __init__(self, x, y, img):
+        self.x = x
+        self.y = y
+        self.laser_img = img
+        self.mask = pygame.mask.from_surface(self.laser_img)
+
+    # Dibujar laser
+    def draw(self, window):
+        window.blit(
+            self.laser_img,
+            (
+                self.x + int(rocket_img.get_width() / 2 - laser_img.get_width() / 2),
+                self.y,
+            ),
+        )
+
+    # Movimiento vertical del laser
+    def move(self, vel):
+        self.y -= vel
+
+    # Validar si sigue en pantalla
+    def off_screen(self, height):
+        return not (self.y < height and self.y >= 0)
+
+    # Validar colisión
+    def collision(self, obj):
+        return collide(obj, self)
+
+
 # Rocket
 class Ship:
-    def __init__(self, x, y, health=100, lives=3):
+    COOLDOWN = 30
+
+    def __init__(self, x, y, health=100):
         self.x = x
         self.y = y
         self.health = health
-        self.lives = lives
         self.ship_img = None
         self.laser_img = None
+        self.lasers = []
         self.cool_down_counter = 0
 
     def draw(self, window):
         window.blit(self.ship_img, (self.x, self.y))
+        for laser in self.lasers:
+            laser.draw(window)
+
+    def move_lasers(self, vel, obj):
+        self.cooldown()
+        for laser in self.lasers:
+            laser.move(vel)
+            if laser.off_screen(height):
+                self.lasers.remove(laser)
+            elif laser.collision(obj):
+                obj.health -= 10
+                self.laser.remove(laser)
+
+    def cooldown(self):
+        if self.cool_down_counter >= self.COOLDOWN:
+            self.cool_down_counter = 0
+        elif self.cool_down_counter > 0:
+            self.cool_down_counter += 1
+
+    def shoot(self):
+        if self.cool_down_counter == 0:
+            laser = Laser(self.x, self.y, self.laser_img)
+            self.lasers.append(laser)
+            self.cool_down_counter = 1
 
     def get_width(self):
         return self.ship_img.get_width()
@@ -49,13 +106,27 @@ class Ship:
 
 # Jugador
 class Player(Ship):
-    def __init__(self, x, y, health=100, lives=3):
-        super().__init__(x, y, health, lives)
+    def __init__(self, x, y, health=100, lives=3, score=0):
+        super().__init__(x, y, health)
         self.ship_img = rocket_img
         self.laser_img = laser_img
         self.lives = lives
         self.mask = pygame.mask.from_surface(self.ship_img)
         self.max_health = health
+        self.score = score
+
+    def move_lasers(self, vel, objs):
+        self.cooldown()
+        for laser in self.lasers:
+            laser.move(vel)
+            if laser.off_screen(height):
+                self.lasers.remove(laser)
+            else:
+                for obj in objs:
+                    if laser.collision(obj):
+                        objs.remove(obj)
+                        self.lasers.remove(laser)
+                        self.score += obj.color
 
 
 # Enemigos
@@ -97,6 +168,13 @@ class Enemy(Ship):
         return self.ship_img.get_height()
 
 
+# Función que detecta colisión entre objetos
+def collide(obj1, obj2):
+    offset_x = obj2.x - obj1.x
+    offset_y = obj2.y - obj1.y
+    return obj1.mask.overlap(obj2.mask, (offset_x, offset_y)) != None
+
+
 # Corazón del juego
 def main():
     fps = 30
@@ -104,6 +182,7 @@ def main():
     level = 0
     score = 0
     player_vel = 10
+    laser_vel = 8
     enemies = []
     enemy_vel = 1
 
@@ -127,7 +206,9 @@ def main():
         player.draw(window)
 
         # Dibujar texto (vida y nivel)
-        score_label = main_font.render(f"Puntuación: {score}", 1, (255, 255, 255))
+        score_label = main_font.render(
+            f"Puntuación: {player.score}", 1, (255, 255, 255)
+        )
         level_label = main_font.render(f"Nivel: {level}", 1, (255, 255, 255))
         health_label = main_font.render(f"Vida: {player.health}%", 1, (255, 255, 255))
         lifes_label = main_font.render(f"Vidas restantes: ", 1, (255, 255, 255))
@@ -136,14 +217,29 @@ def main():
         window.blit(score_label, (width - score_label.get_width() - 10, 5))
         window.blit(level_label, (10, 5))
         window.blit(health_label, (10, 35))
-        window.blit(lifes_label, (width - lifes_label.get_width() - (heart_img.get_width() + 10) * 3, 35, ),)
+        window.blit(
+            lifes_label,
+            (
+                width - lifes_label.get_width() - (heart_img.get_width() + 10) * 3,
+                35,
+            ),
+        )
         window.blit(cord_label, (10, 65))
         for live in range(player.lives + 1):
-            window.blit(heart_img, (width - heart_img.get_width() * live - (10 * live), 42))
+            window.blit(
+                heart_img, (width - heart_img.get_width() * live - (10 * live), 42)
+            )
 
+        # Muestra etiqueta fin del juego
         if lost:
             lost_label = menu_font.render("¡¡Juego Terminado!!", 1, (255, 255, 255))
-            window.blit(lost_label,(width / 2 - lost_label.get_width() / 2, height / 2 - lost_label.get_height() / 2, ),)
+            window.blit(
+                lost_label,
+                (
+                    width / 2 - lost_label.get_width() / 2,
+                    height / 2 - lost_label.get_height() / 2,
+                ),
+            )
 
         # Actualiza pantalla
         pygame.display.update()
@@ -156,13 +252,13 @@ def main():
         # Verifica si el juego continúa
         if player.health == 0 and player.lives == 0:
             lost = True
-            lost_count +=1
+            lost_count += 1
         if lost:
-            if lost_count > fps *3:
+            if lost_count > fps * 3:
                 run = False
             else:
                 continue
-        
+
         # Sube de nivel y calcula la dificultad de los enemigos
         if len(enemies) == 0:
             level += 1
@@ -172,13 +268,14 @@ def main():
                 ran = 6
             else:
                 ran = 10
-            
+
             # Crea enemigos
             for i in range(level * 3):
                 enemy = Enemy(
                     random.randrange(50, width - 50 - star_img.get_width()),
                     random.randrange(-500, -100),
-                    random.randrange(1, ran),)
+                    random.randrange(1, ran),
+                )
                 enemies.append(enemy)
 
         # Para salir
@@ -196,26 +293,33 @@ def main():
             player.y -= player_vel
         if keys[pygame.K_s] and player.y + 10 + player.get_height() < height:  # Abajo
             player.y += player_vel
+        if keys[pygame.K_SPACE]:
+            player.shoot()
 
         # Eliminamos los enemigos que chocan con el fondo y realizamos daño
         for enemy in enemies[:]:
-            enemy.move(10)
+            enemy.move(enemy_vel)
+            enemy.move_lasers(laser_vel, player)
+
             if enemy.y + enemy.get_height() > height:
                 damage = enemy.color * 10
                 if player.lives == 0:
                     if damage >= player.health:
                         lost = True
                         player.health = 0
-                    else: 
+                    else:
                         player.health -= damage
                 else:
                     if damage <= player.health:
                         player.health -= damage
                     else:
-                        player.lives -=1
+                        player.lives -= 1
                         player.health = 100
 
                 enemies.remove(enemy)
+
+        player.move_lasers(laser_vel, enemies)
+
 
 main()
 
