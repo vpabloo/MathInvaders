@@ -1,137 +1,130 @@
 import pygame
 import random
-import time
-import os
+
 
 pygame.font.init()
+pygame.mixer.init()
 pygame.init()
 
 # Multimedia
-background = pygame.transform.scale(
+BACKGROUND = pygame.transform.scale(
     pygame.image.load("images/wallpaper.jpg"), (1080, 686)
 )
-rocket_img = pygame.transform.scale(pygame.image.load("images/rocket.png"), (64, 64))
-laser_img = pygame.transform.scale(pygame.image.load("images/laser.png"), (16, 16))
-star_img = pygame.transform.scale(pygame.image.load("images/star.png"), (64, 64))
-heart_img = pygame.transform.scale(pygame.image.load("images/heart.png"), (15, 15))
+ROCKET_IMG = pygame.transform.scale(pygame.image.load("images/rocket.png"), (64, 64))
+LASER_IMG = pygame.transform.scale(pygame.image.load("images/laser.png"), (16, 32))
+STAR_IMG = pygame.transform.scale(pygame.image.load("images/star.png"), (64, 64))
+HEART_IMG = pygame.transform.scale(pygame.image.load("images/heart.png"), (15, 15))
+
+N_1_IMG = pygame.transform.scale(pygame.image.load("images/1.png"), (64, 64))
+N_2_IMG = pygame.transform.scale(pygame.image.load("images/2.png"), (64, 64))
+N_3_IMG = pygame.transform.scale(pygame.image.load("images/3.png"), (64, 64))
+N_4_IMG = pygame.transform.scale(pygame.image.load("images/4.png"), (64, 64))
+N_5_IMG = pygame.transform.scale(pygame.image.load("images/5.png"), (64, 64))
+N_6_IMG = pygame.transform.scale(pygame.image.load("images/6.png"), (64, 64))
+N_7_IMG = pygame.transform.scale(pygame.image.load("images/7.png"), (64, 64))
+N_8_IMG = pygame.transform.scale(pygame.image.load("images/8.png"), (64, 64))
+N_9_IMG = pygame.transform.scale(pygame.image.load("images/9.png"), (64, 64))
+N_10_IMG = pygame.transform.scale(pygame.image.load("images/10.png"), (32, 32))
+
+EQUALS_IMG = pygame.transform.scale(pygame.image.load("images/igual.png"), (96, 96))
+
+MAS_IMG = pygame.transform.scale(pygame.image.load("images/mas.png"), (96, 96))
+MENOS_IMG = pygame.transform.scale(pygame.image.load("images/menos.png"), (96, 96))
+
+RECTANGULO_IMG = pygame.transform.scale(
+    pygame.image.load("images/rectangulo3.png"), (96, 96)
+)
+
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
 
 # Ventana
-width = background.get_width()
-height = background.get_height()
-window = pygame.display.set_mode((width, height))
+WIDTH = BACKGROUND.get_width()
+HEIGHT = BACKGROUND.get_height()
+WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Juego - Math Invaders")
+CLOCK = pygame.time.Clock()
+FPS = 60
 
 # main_font = pygame.font.SysFont("comicsans", 20)
-main_font = pygame.font.Font("VT323-Regular.ttf", 30)
-menu_font = pygame.font.Font("VT323-Regular.ttf", 120)
+MAIN_FONT = pygame.font.Font("VT323-Regular.ttf", 30)
+ALERT_FONT = pygame.font.Font("VT323-Regular.ttf", 120)
 
 
-# Laser
-class Laser:
-    def __init__(self, x, y, img):
-        self.x = x
-        self.y = y
-        self.laser_img = img
-        self.mask = pygame.mask.from_surface(self.laser_img)
-
-    # Dibujar laser
-    def draw(self, window):
-        window.blit(
-            self.laser_img,
-            (
-                self.x + int(rocket_img.get_width() / 2 - laser_img.get_width() / 2),
-                self.y,
-            ),
-        )
-
-    # Movimiento vertical del laser
-    def move(self, vel):
-        self.y -= vel
-
-    # Validar si sigue en pantalla
-    def off_screen(self, height):
-        return not (self.y < height and self.y >= 0)
-
-    # Validar colisión
-    def collision(self, obj):
-        return collide(obj, self)
+# Etiquetas
+def labels(surface, text, x, y):
+    font = MAIN_FONT
+    text_surface = font.render(text, True, WHITE)
+    text_rect = text_surface.get_rect()
+    text_rect.topleft = (x - text_surface.get_width(), y)
+    surface.blit(text_surface, text_rect)
 
 
-# Rocket
-class Ship:
-    COOLDOWN = 30
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = ROCKET_IMG
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.centerx = WIDTH // 2
+        self.rect.bottom = HEIGHT - 20
+        self.speed_x = 0
+        self.speed_y = 0
+        self.speed = 5
+        self.lifes = 3
+        self.healt = 100
+        self.score = 0
 
-    def __init__(self, x, y, health=100):
-        self.x = x
-        self.y = y
-        self.health = health
-        self.ship_img = None
-        self.laser_img = None
-        self.lasers = []
-        self.cool_down_counter = 0
+    def update(self):
+        self.speed_x = 0
+        self.speed_y = 0
+        keystate = pygame.key.get_pressed()
+        if keystate[pygame.K_a]:
+            self.speed_x = -self.speed
+        if keystate[pygame.K_d]:
+            self.speed_x = self.speed
+        if keystate[pygame.K_s]:
+            self.speed_y = self.speed
+        if keystate[pygame.K_w]:
+            self.speed_y = -self.speed
 
-    def draw(self, window):
-        window.blit(self.ship_img, (self.x, self.y))
-        for laser in self.lasers:
-            laser.draw(window)
+        self.rect.x += self.speed_x
+        self.rect.y += self.speed_y
 
-    def move_lasers(self, vel, obj):
-        self.cooldown()
-        for laser in self.lasers:
-            laser.move(vel)
-            if laser.off_screen(height):
-                self.lasers.remove(laser)
-            elif laser.collision(obj):
-                obj.health -= 10
-                self.laser.remove(laser)
+        if self.rect.right > WIDTH:
+            self.rect.right = WIDTH
+        if self.rect.left < 0:
+            self.rect.left = 0
 
-    def cooldown(self):
-        if self.cool_down_counter >= self.COOLDOWN:
-            self.cool_down_counter = 0
-        elif self.cool_down_counter > 0:
-            self.cool_down_counter += 1
+        if self.rect.bottom > HEIGHT:
+            self.rect.bottom = HEIGHT
+        if self.rect.top < 0:
+            self.rect.top = 0
 
     def shoot(self):
-        if self.cool_down_counter == 0:
-            laser = Laser(self.x, self.y, self.laser_img)
-            self.lasers.append(laser)
-            self.cool_down_counter = 1
-
-    def get_width(self):
-        return self.ship_img.get_width()
-
-    def get_height(self):
-        return self.ship_img.get_height()
+        laser = Laser(self.rect.centerx, self.rect.top)
+        all_sprites.add(laser)
+        lasers.add(laser)
 
 
-# Jugador
-class Player(Ship):
-    def __init__(self, x, y, health=100, lives=3, score=0):
-        super().__init__(x, y, health)
-        self.ship_img = rocket_img
-        self.laser_img = laser_img
-        self.lives = lives
-        self.mask = pygame.mask.from_surface(self.ship_img)
-        self.max_health = health
-        self.score = score
+class Laser(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = LASER_IMG
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.y = y
+        self.rect.centerx = x
+        self.speedy = -10
 
-    def move_lasers(self, vel, objs):
-        self.cooldown()
-        for laser in self.lasers:
-            laser.move(vel)
-            if laser.off_screen(height):
-                self.lasers.remove(laser)
-            else:
-                for obj in objs:
-                    if laser.collision(obj):
-                        objs.remove(obj)
-                        self.lasers.remove(laser)
-                        self.score += obj.color
+    def update(self):
+        self.rect.y += self.speedy
+        if self.rect.bottom < 0:
+            self.kill()
 
 
-# Enemigos
-class Enemy(Ship):
-    colores = {
+class Star(pygame.sprite.Sprite):
+    COLOR = {
         1: "#FFBA08",
         2: "#FAA307",
         3: "#F48C06",
@@ -144,184 +137,111 @@ class Enemy(Ship):
         10: "#03071E",
     }
 
-    def __init__(self, x, y, color, health=100):
-        super().__init__(x, y, health)
-        self.ship_img = star_img
-        self.color = color
-        self.mask = pygame.mask.from_surface(self.ship_img)
-
-    def draw_enemy(self, window):
-        window.blit(self.ship_img, (self.x, self.y))
-        number_label = main_font.render(str(self.color), 1, self.colores[self.color])
-        window.blit(
-            number_label,
-            (
-                self.x + int(star_img.get_width() / 2) - 6,
-                self.y + int(star_img.get_height() / 2) - 15,
-            ),
+    def __init__(self):
+        super().__init__()
+        self.image = STAR_IMG
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = random.randrange(50, WIDTH - self.rect.width - 50)
+        self.rect.y = random.randrange(-100, -40)
+        self.speedy = random.randrange(1, 3)
+        self.number = random.randint(1, 10)
+        self.number_label = MAIN_FONT.render(
+            str(self.number), 1, self.COLOR[self.number]
         )
 
-    def move(self, vel):
-        self.y += vel
+    def update(self):
+        self.rect.y += self.speedy
+        WINDOW.blit(
+            self.number_label,
+            (
+                self.rect.centerx - self.number_label.get_width() / 2,
+                self.rect.centery - self.number_label.get_height() / 2,
+            ),
+        )
+        if (
+            self.rect.top > HEIGHT + 10
+            or self.rect.left < -25
+            or self.rect.right > WIDTH + 25
+        ):
+            self.rect.x = random.randrange(WIDTH - self.rect.width)
+            self.rect.y = random.randrange(-100, -40)
+            self.speedy = random.randrange(1, 3)
+            player.healt -= self.number
 
-    def get_height(self):
-        return self.ship_img.get_height()
+
+all_sprites = pygame.sprite.Group()  # Todo el contenido del juego
+star_list = pygame.sprite.Group()  # Las estrellas
+lasers = pygame.sprite.Group()  # Los Lasers
+
+player = Player()  # Creando el jugador
+for i in range(5):  # Creando las estrellas
+    star = Star()
+    all_sprites.add(star)
+    star_list.add(star)
+
+all_sprites.add(player)  # Agregando jugador al grupo de sprites
 
 
-# Función que detecta colisión entre objetos
-def collide(obj1, obj2):
-    offset_x = obj2.x - obj1.x
-    offset_y = obj2.y - obj1.y
-    return obj1.mask.overlap(obj2.mask, (offset_x, offset_y)) != None
-
-
-# Corazón del juego
 def main():
-    fps = 30
     run = True
-    level = 0
-    score = 0
-    player_vel = 10
-    laser_vel = 8
-    enemies = []
-    enemy_vel = 1
-
-    player = Player(int(width / 2), height - 66)
-
-    clock = pygame.time.Clock()
-
-    lost = False
-    lost_count = 0
-
-    # Función que dibuja el contenido
-    def redraw_window():
-        # Dibujar fondo
-        window.blit(background, (0, 0))
-
-        # Dibujar enemigos
-        for enemy in enemies:
-            enemy.draw_enemy(window)
-
-        # Dibujar rocket
-        player.draw(window)
-
-        # Dibujar texto (vida y nivel)
-        score_label = main_font.render(
-            f"Puntuación: {player.score}", 1, (255, 255, 255)
-        )
-        level_label = main_font.render(f"Nivel: {level}", 1, (255, 255, 255))
-        health_label = main_font.render(f"Vida: {player.health}%", 1, (255, 255, 255))
-        lifes_label = main_font.render(f"Vidas restantes: ", 1, (255, 255, 255))
-        cord_label = main_font.render(f"x={player.x}, y={player.y}", 1, (255, 255, 255))
-
-        window.blit(score_label, (width - score_label.get_width() - 10, 5))
-        window.blit(level_label, (10, 5))
-        window.blit(health_label, (10, 35))
-        window.blit(
-            lifes_label,
-            (
-                width - lifes_label.get_width() - (heart_img.get_width() + 10) * 3,
-                35,
-            ),
-        )
-        window.blit(cord_label, (10, 65))
-        for live in range(player.lives + 1):
-            window.blit(
-                heart_img, (width - heart_img.get_width() * live - (10 * live), 42)
-            )
-
-        # Muestra etiqueta fin del juego
-        if lost:
-            lost_label = menu_font.render("¡¡Juego Terminado!!", 1, (255, 255, 255))
-            window.blit(
-                lost_label,
-                (
-                    width / 2 - lost_label.get_width() / 2,
-                    height / 2 - lost_label.get_height() / 2,
-                ),
-            )
-
-        # Actualiza pantalla
-        pygame.display.update()
-
-    # Inicia pantalla y captura controles de teclado
     while run:
-        clock.tick(fps)
-        redraw_window()
-
-        # Verifica si el juego continúa
-        if player.health == 0 and player.lives == 0:
-            lost = True
-            lost_count += 1
-        if lost:
-            if lost_count > fps * 3:
-                run = False
-            else:
-                continue
-
-        # Sube de nivel y calcula la dificultad de los enemigos
-        if len(enemies) == 0:
-            level += 1
-            if level <= 3:
-                ran = 4
-            elif level <= 6 and level > 3:
-                ran = 6
-            else:
-                ran = 10
-
-            # Crea enemigos
-            for i in range(level * 3):
-                enemy = Enemy(
-                    random.randrange(50, width - 50 - star_img.get_width()),
-                    random.randrange(-500, -100),
-                    random.randrange(1, ran),
-                )
-                enemies.append(enemy)
-
-        # Para salir
+        CLOCK.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    player.shoot()
 
-        # Controles de teclado
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_a] and player.x > 0:  # Izquierda
-            player.x -= player_vel
-        if keys[pygame.K_d] and player.x + player.get_width() < width:  # Derecha
-            player.x += player_vel
-        if keys[pygame.K_w] and player.y - 10 > 0:  # Arriba
-            player.y -= player_vel
-        if keys[pygame.K_s] and player.y + 10 + player.get_height() < height:  # Abajo
-            player.y += player_vel
-        if keys[pygame.K_SPACE]:
-            player.shoot()
+        all_sprites.update()
 
-        # Eliminamos los enemigos que chocan con el fondo y realizamos daño
-        for enemy in enemies[:]:
-            enemy.move(enemy_vel)
-            enemy.move_lasers(laser_vel, player)
+        # Colision estrella vs laser
+        colisions = pygame.sprite.groupcollide(star_list, lasers, True, True)
+        for colision in colisions:
+            player.score += colision.number
 
-            if enemy.y + enemy.get_height() > height:
-                damage = enemy.color * 10
-                if player.lives == 0:
-                    if damage >= player.health:
-                        lost = True
-                        player.health = 0
-                    else:
-                        player.health -= damage
-                else:
-                    if damage <= player.health:
-                        player.health -= damage
-                    else:
-                        player.lives -= 1
-                        player.health = 100
+        # Colision de jugador vs estrella
+        colision = pygame.sprite.spritecollide(player, star_list, True)
+        if colision:
+            player.lifes -= 1
 
-                enemies.remove(enemy)
+        WINDOW.blit(BACKGROUND.convert(), [0, 0])
 
-        player.move_lasers(laser_vel, enemies)
+        all_sprites.draw(WINDOW)
+
+        star_list.update()
+
+        # Etiquetas
+        labels(WINDOW, f"Score: {str(player.score)}", WIDTH - 15, 10)
+        labels(WINDOW, f"Life: {str(player.healt)}", WIDTH - 15, 40)
+
+        for live in range(player.lifes + 1):
+            WINDOW.blit(
+                HEART_IMG, (WIDTH - HEART_IMG.get_width() * live - (15 * live), 70)
+            )
+
+        WINDOW.blit(RECTANGULO_IMG, (10, 10))
+        WINDOW.blit(MAS_IMG, (116, 10))
+        WINDOW.blit(RECTANGULO_IMG, (222, 10))
+        WINDOW.blit(EQUALS_IMG, (328, 10))
+
+        WINDOW.blit(
+            N_2_IMG,
+            (
+                10 + RECTANGULO_IMG.get_width() / 2 - N_1_IMG.get_width() / 2,
+                10 + RECTANGULO_IMG.get_height() / 2 - N_1_IMG.get_height() / 2,
+            ),
+        )
+        WINDOW.blit(
+            N_2_IMG,
+            (
+                222 + RECTANGULO_IMG.get_width() / 2 - N_1_IMG.get_width() / 2,
+                10 + RECTANGULO_IMG.get_height() / 2 - N_1_IMG.get_height() / 2,
+            ),
+        )
+
+        pygame.display.flip()
 
 
 main()
-
-# https://www.youtube.com/watch?v=Q-__8Xw9KTM&ab_channel=TechWithTim
-# https://www.youtube.com/watch?v=rp9s1O3iSEQ&ab_channel=LeMasterTech
