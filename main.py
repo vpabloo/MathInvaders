@@ -1,7 +1,6 @@
 import pygame
 import random
 
-
 pygame.font.init()
 pygame.mixer.init()
 pygame.init()
@@ -14,17 +13,6 @@ ROCKET_IMG = pygame.transform.scale(pygame.image.load("images/rocket.png"), (64,
 LASER_IMG = pygame.transform.scale(pygame.image.load("images/laser.png"), (16, 32))
 STAR_IMG = pygame.transform.scale(pygame.image.load("images/star.png"), (64, 64))
 HEART_IMG = pygame.transform.scale(pygame.image.load("images/heart.png"), (15, 15))
-
-N_1_IMG = pygame.transform.scale(pygame.image.load("images/1.png"), (64, 64))
-N_2_IMG = pygame.transform.scale(pygame.image.load("images/2.png"), (64, 64))
-N_3_IMG = pygame.transform.scale(pygame.image.load("images/3.png"), (64, 64))
-N_4_IMG = pygame.transform.scale(pygame.image.load("images/4.png"), (64, 64))
-N_5_IMG = pygame.transform.scale(pygame.image.load("images/5.png"), (64, 64))
-N_6_IMG = pygame.transform.scale(pygame.image.load("images/6.png"), (64, 64))
-N_7_IMG = pygame.transform.scale(pygame.image.load("images/7.png"), (64, 64))
-N_8_IMG = pygame.transform.scale(pygame.image.load("images/8.png"), (64, 64))
-N_9_IMG = pygame.transform.scale(pygame.image.load("images/9.png"), (64, 64))
-N_10_IMG = pygame.transform.scale(pygame.image.load("images/10.png"), (32, 32))
 
 EQUALS_IMG = pygame.transform.scale(pygame.image.load("images/igual.png"), (96, 96))
 
@@ -58,6 +46,15 @@ def labels(surface, text, x, y):
     text_rect = text_surface.get_rect()
     text_rect.topleft = (x - text_surface.get_width(), y)
     surface.blit(text_surface, text_rect)
+
+
+class Number(pygame.sprite.Sprite):
+    def __init__(self, valor):
+        super().__init__()
+        self.valor = valor
+        self.image = pygame.transform.scale(
+            pygame.image.load("images/" + self.valor + ".png"), (64, 64)
+        )
 
 
 class Player(pygame.sprite.Sprite):
@@ -185,6 +182,9 @@ all_sprites.add(player)  # Agregando jugador al grupo de sprites
 
 def main():
     run = True
+    number_a = Number(str(random.randint(1, 5)))
+    number_b = Number(str(random.randint(1, 5)))
+    result = int(number_a.valor) + int(number_b.valor)
     while run:
         CLOCK.tick(FPS)
         for event in pygame.event.get():
@@ -199,7 +199,8 @@ def main():
         # Colision estrella vs laser
         colisions = pygame.sprite.groupcollide(star_list, lasers, True, True)
         for colision in colisions:
-            player.score += colision.number
+            if colision.number == result:
+                player.score += colision.number
 
         # Colision de jugador vs estrella
         colision = pygame.sprite.spritecollide(player, star_list, True)
@@ -227,17 +228,17 @@ def main():
         WINDOW.blit(EQUALS_IMG, (328, 10))
 
         WINDOW.blit(
-            N_2_IMG,
+            number_a.image,
             (
-                10 + RECTANGULO_IMG.get_width() / 2 - N_1_IMG.get_width() / 2,
-                10 + RECTANGULO_IMG.get_height() / 2 - N_1_IMG.get_height() / 2,
+                10 + RECTANGULO_IMG.get_width() / 2 - 32,
+                10 + RECTANGULO_IMG.get_height() / 2 - 32,
             ),
         )
         WINDOW.blit(
-            N_2_IMG,
+            number_b.image,
             (
-                222 + RECTANGULO_IMG.get_width() / 2 - N_1_IMG.get_width() / 2,
-                10 + RECTANGULO_IMG.get_height() / 2 - N_1_IMG.get_height() / 2,
+                222 + RECTANGULO_IMG.get_width() / 2 - 32,
+                10 + RECTANGULO_IMG.get_height() / 2 - 32,
             ),
         )
 

@@ -4,8 +4,8 @@
 Divertido juego para niños desarrollado en PyGame
 
 FUENTE DE ICONOS:
-Iconos creados por Smashicons - Flaticon 
-[NUMERO 1](https://www.flaticon.es/iconos-gratis/numero-1)
+Iconos creados por Smashicons - Flaticon /n
+[NUMERO 1](https://www.flaticon.es/iconos-gratis/numero-1) 
 [NUMERO 2](https://www.flaticon.es/iconos-gratis/numero-2)
 [NUMERO 3](https://www.flaticon.es/iconos-gratis/numero-3)
 [NUMERO 4](https://www.flaticon.es/iconos-gratis/numero-4)
