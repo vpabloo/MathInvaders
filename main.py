@@ -9,7 +9,7 @@ pygame.init()
 BACKGROUND = pygame.transform.scale(
     pygame.image.load("images/wallpaper.jpg"), (1080, 686)
 )
-ROCKET_IMG = pygame.transform.scale(pygame.image.load("images/rocket.png"), (64, 64))
+ROCKET_IMG = pygame.transform.scale(pygame.image.load("images/rocket.png"), (72, 72))
 LASER_IMG = pygame.transform.scale(pygame.image.load("images/laser.png"), (16, 32))
 STAR_IMG = pygame.transform.scale(pygame.image.load("images/star.png"), (64, 64))
 HEART_IMG = pygame.transform.scale(pygame.image.load("images/heart.png"), (15, 15))
@@ -69,7 +69,7 @@ class Player(pygame.sprite.Sprite):
         self.speed_y = 0
         self.speed = 5
         self.lifes = 3
-        self.healt = 100
+        self.health = 100
         self.score = 0
         self.level = 0
 
@@ -135,15 +135,15 @@ class Star(pygame.sprite.Sprite):
         10: "#03071E",
     }
 
-    def __init__(self):
+    def __init__(self, number):
         super().__init__()
         self.image = STAR_IMG
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = random.randrange(50, WIDTH - self.rect.width - 50)
-        self.rect.y = random.randrange(-100, -40)
-        self.speedy = random.randrange(1, 3)
-        self.number = random.randint(1, 10)
+        self.rect.y = random.randrange(-400, -40)
+        self.speedy = random.randrange(1, 2)
+        self.number = number
         self.number_label = MAIN_FONT.render(
             str(self.number), 1, self.COLOR[self.number]
         )
@@ -157,6 +157,7 @@ class Star(pygame.sprite.Sprite):
                 self.rect.centery - self.number_label.get_height() / 2,
             ),
         )
+
         if (
             self.rect.top > HEIGHT + 10
             or self.rect.left < -25
@@ -165,7 +166,7 @@ class Star(pygame.sprite.Sprite):
             self.rect.x = random.randrange(WIDTH - self.rect.width)
             self.rect.y = random.randrange(-100, -40)
             self.speedy = random.randrange(1, 3)
-            player.healt -= self.number
+            updateStars()
 
 
 all_sprites = pygame.sprite.Group()  # Todo el contenido del juego
@@ -173,10 +174,15 @@ star_list = pygame.sprite.Group()  # Las estrellas
 lasers = pygame.sprite.Group()  # Los Lasers
 
 player = Player()  # Creando el jugador
+
 for i in range(5):  # Creando las estrellas
-    star = Star()
-    all_sprites.add(star)
-    star_list.add(star)
+    stars = Star(random.randint(1, 10))
+    all_sprites.add(stars)
+    star_list.add(stars)
+
+def updateStars():
+    for star in star_list:
+        star.number = random.randint(1, 10)
 
 all_sprites.add(player)  # Agregando jugador al grupo de sprites
 
@@ -202,6 +208,8 @@ def main():
         for colision in colisions:
             if colision.number == result:
                 player.score += colision.number
+            else:
+                player.score -= colision.number // 2
 
         # Colision de jugador vs estrella
         colision = pygame.sprite.spritecollide(player, star_list, True)
@@ -215,19 +223,21 @@ def main():
         star_list.update()
 
         # Etiquetas
-        labels(WINDOW, f"Score: {str(player.score)}", WIDTH - 15, 10)
-        labels(WINDOW, f"Life: {str(player.healt)}", WIDTH - 15, 40)
+        labels(WINDOW, f"Level: {str(player.level)}", WIDTH - 15, 10)
+        labels(WINDOW, f"Score: {str(player.score)}", WIDTH - 15, 40)
+        labels(WINDOW, f"Health: {str(player.health)}", WIDTH - 15, 70)
 
+        # Dibujar corazones
         for live in range(player.lifes + 1):
             WINDOW.blit(
-                HEART_IMG, (WIDTH - HEART_IMG.get_width() * live - (15 * live), 70)
+                HEART_IMG, (WIDTH - HEART_IMG.get_width() * live - (15 * live), 100)
             )
 
+        # Dibujar cuadros para operación matemática
         WINDOW.blit(RECTANGULO_IMG, (10, 10))
         WINDOW.blit(MAS_IMG, (116, 10))
         WINDOW.blit(RECTANGULO_IMG, (222, 10))
         WINDOW.blit(EQUALS_IMG, (328, 10))
-
         WINDOW.blit(
             number_a.image,
             (
