@@ -1,4 +1,5 @@
 # Math Invaders
+
 ## ***Con amor para mis hijos:***
 
 -- EN DESARROLLO --
@@ -24,11 +25,11 @@ Si la nave espacial es tocada por una estrella se descontará una vida de las tr
 El juego termina cuando el jugador se queda sin vidas.
 
 ## **CONTROLES del teclado:** 
-* "A" para ir a la izquierda.
-* "D" para ir a la derecha.
-* "W" para ir arriba.
-* "S" para ir hacia abajo.
-* BARRA ESPACIADORA para disparar
+   * "A" para ir a la izquierda.
+   * "D" para ir a la derecha.
+   * "W" para ir arriba.
+   * "S" para ir hacia abajo.
+   * BARRA ESPACIADORA para disparar
 
 ## **SCREENSHOOT**
 ![Screenshot](/images/Screenshot%202023-09-29%20123631.png)
