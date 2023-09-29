@@ -166,7 +166,6 @@ class Star(pygame.sprite.Sprite):
             self.rect.x = random.randrange(WIDTH - self.rect.width)
             self.rect.y = random.randrange(-100, -40)
             self.speedy = random.randrange(1, 3)
-            updateStars()
 
 
 all_sprites = pygame.sprite.Group()  # Todo el contenido del juego
@@ -180,9 +179,6 @@ for i in range(5):  # Creando las estrellas
     all_sprites.add(stars)
     star_list.add(stars)
 
-def updateStars():
-    for star in star_list:
-        star.number = random.randint(1, 10)
 
 all_sprites.add(player)  # Agregando jugador al grupo de sprites
 
