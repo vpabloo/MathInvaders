@@ -71,6 +71,7 @@ class Player(pygame.sprite.Sprite):
         self.lifes = 3
         self.healt = 100
         self.score = 0
+        self.level = 0
 
     def update(self):
         self.speed_x = 0

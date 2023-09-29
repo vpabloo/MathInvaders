@@ -4,11 +4,13 @@
 
 -- EN DESARROLLO --
 
+El juego no se encuentra terminado, sigo desarrollando para cumplir con la Descripción e instrucciones.
+
 ## **INTRODUCCIÓN**
 
 El juego **Math Invaders** es un divertido juego desarrollado en [PyGame](https://www.pygame.org/) que tiene como principal finalidad, promover en los niños la práctica de operaciones matemáticas básicas (sumas y restas -por ahora-).
 
-## **DESCRIPCIÓN - INSTRUCCIONES**
+## **DESCRIPCIÓN E INSTRUCCIONES**
 
 En pantalla se muestra una _Nave espacial_ capaz de moverse libremente en cualquier dirección dentro de los límites de la ventana (izquierda, derecha, arriba y abajo). La Nave espacial tiene la capacidad de lanzar un rayo láser cada que el jugador lo requiera para destruir _estrellas numéricas_.
 
