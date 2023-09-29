@@ -3,27 +3,37 @@
 
 -- EN DESARROLLO --
 
-Divertido juego para niños desarrollado en PyGame
+## **INTRODUCCIÓN**
 
-El juego **Math Invaders** tiene como finalidad promover en los niños la práctica de operaciones matemáticas básicas (sumas y restas -por ahora-). En pantalla se muestra una _Nave espacial_ capaz de moverse libremente -en los límites de pantalla- en cualquier dirección (derecha, izquierda, arriba y abajo), lanzar un rayo láser cada que se requiera para destruir _estrellas numéricas_. Cada estrella numérica va apareciendo con un número que representa su valor, se traslada de la parte superior hacia la parte inferior de manera vertical a una velocidad que va aumentando conforme el juego avanza y el jugador sube de nivel.
+El juego **Math Invaders** es un divertido juego desarrollado en [PyGame](https://www.pygame.org/) que tiene como principal finalidad, promover en los niños la práctica de operaciones matemáticas básicas (sumas y restas -por ahora-).
+
+## **DESCRIPCIÓN - INSTRUCCIONES**
+
+En pantalla se muestra una _Nave espacial_ capaz de moverse libremente en cualquier dirección dentro de los límites de la ventana (izquierda, derecha, arriba y abajo). La Nave espacial tiene la capacidad de lanzar un rayo láser cada que el jugador lo requiera para destruir _estrellas numéricas_.
+
+Cada estrella numérica, etiquetada con un número que representa su valor, se traslada de manera vertical de la parte superior hacia la parte inferior de la ventana, a una velocidad que va aumentando conforme el juego avanza y el jugador sube de nivel.
 
 Al mismo tiempo en la parte superior izquierda de la pantalla se muestra una operación matemática que va cambiando cada nivel avanzado.
 
-El jugador debe resolver la operación matemática y disparar a la estrella que lleve la respuesta correcta, con esto el jugador obtendrá la cantidad de puntos igual a la respuesta correcta (etiqueta de la estrella).
+El jugador debe resolver la operación matemática y utilzando la nave espacial disparar a la estrella que lleve la respuesta correcta, con esto el jugador obtendrá la cantidad de puntos igual a la respuesta correcta (etiqueta de la estrella) y se sumará al puntaje acumulado mostrado en la parte superior derecha.
 
 En caso de destruir una estrella con la respuesta incorrecta se restará del marcador acumulado la mitad del valor de la etiqueta numérica de la estrella. (Solo para el caso del número 1 se restará 1 y para números impares se redondea hacia el entero inferior).
 
-## CONTROLES del teclado: 
+Si la nave espacial es tocada por una estrella se descontará una vida de las tres vidas con las que inicial e jugador, estas vidas están representadas por un corazón ubicado en la parte superior derecha.
+
+El juego termina cuando el jugador se queda sin vidas.
+
+## **CONTROLES del teclado:** 
 * "A" para ir a la izquierda.
 * "D" para ir a la derecha.
 * "W" para ir arriba.
 * "S" para ir hacia abajo.
 * BARRA ESPACIADORA para disparar
 
-## Screenshot
+## **SCREENSHOOT**
 ![Screenshot](/images/Screenshot%202023-09-29%20123631.png)
 
-## Creditos de imagenes
+## **CREDITOS DE IMAGENES**
 FUENTE DE ICONOS:
 Iconos creados por Smashicons - Flaticon
 
