@@ -48,6 +48,14 @@ def labels(surface, text, x, y):
     surface.blit(text_surface, text_rect)
 
 
+# Creando estrellas
+def creando_estrellas(cantidad):
+    for i in range(cantidad):  # Creando las estrellas
+        stars = Star(random.randint(1, 10))
+        all_sprites.add(stars)
+        star_list.add(stars)
+
+
 class Number(pygame.sprite.Sprite):
     def __init__(self, valor):
         super().__init__()
@@ -69,7 +77,6 @@ class Player(pygame.sprite.Sprite):
         self.speed_y = 0
         self.speed = 5
         self.lifes = 3
-        self.health = 100
         self.score = 0
         self.level = 0
 
@@ -141,15 +148,15 @@ class Star(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = random.randrange(50, WIDTH - self.rect.width - 50)
-        self.rect.y = random.randrange(-400, -40)
-        self.speedy = random.randrange(1, 2)
+        self.rect.y = random.randrange(-400, -20)
+        self.speed = 1
         self.number = number
         self.number_label = MAIN_FONT.render(
-            str(self.number), 1, self.COLOR[self.number]
+            str(number), 1, self.COLOR[number]
         )
 
     def update(self):
-        self.rect.y += self.speedy
+        self.rect.y += self.speed
         WINDOW.blit(
             self.number_label,
             (
@@ -163,9 +170,13 @@ class Star(pygame.sprite.Sprite):
             or self.rect.left < -25
             or self.rect.right > WIDTH + 25
         ):
-            self.rect.x = random.randrange(WIDTH - self.rect.width)
-            self.rect.y = random.randrange(-100, -40)
-            self.speedy = random.randrange(1, 3)
+            self.rect.x = random.randrange(WIDTH - self.rect.width - 20)
+            self.rect.y = random.randrange(-800, -50)
+            self.speedy = 1
+            self.number = new_number = random.randint(1, 10)
+            self.number_label = MAIN_FONT.render(
+                str(new_number), 1, self.COLOR[new_number]
+            )
 
 
 all_sprites = pygame.sprite.Group()  # Todo el contenido del juego
@@ -174,17 +185,13 @@ lasers = pygame.sprite.Group()  # Los Lasers
 
 player = Player()  # Creando el jugador
 
-for i in range(5):  # Creando las estrellas
-    stars = Star(random.randint(1, 10))
-    all_sprites.add(stars)
-    star_list.add(stars)
-
 
 all_sprites.add(player)  # Agregando jugador al grupo de sprites
 
 
 def main():
     run = True
+    lost = False
     number_a = Number(str(random.randint(1, 5)))
     number_b = Number(str(random.randint(1, 5)))
     result = int(number_a.valor) + int(number_b.valor)
@@ -197,36 +204,55 @@ def main():
                 if event.key == pygame.K_SPACE:
                     player.shoot()
 
-        all_sprites.update()
+        if lost:
+            pass
+        else:
+            all_sprites.update()
 
-        # Colision estrella vs laser
-        colisions = pygame.sprite.groupcollide(star_list, lasers, True, True)
-        for colision in colisions:
-            if colision.number == result:
-                player.score += colision.number
-            else:
-                player.score -= colision.number // 2
+            # Colision estrella vs laser
+            colisions = pygame.sprite.groupcollide(star_list, lasers, True, True)
+            for colision in colisions:
+                if colision.number == result:
+                    player.score += colision.number * player.level
+                else:
+                    player.score -= colision.number // 2
 
-        # Colision de jugador vs estrella
-        colision = pygame.sprite.spritecollide(player, star_list, True)
-        if colision:
-            player.lifes -= 1
+            # Colision de jugador vs estrella
+            colision = pygame.sprite.spritecollide(player, star_list, True)
+            if colision:
+                player.lifes -= 1
 
         WINDOW.blit(BACKGROUND.convert(), [0, 0])
 
         all_sprites.draw(WINDOW)
 
         star_list.update()
+        if len(star_list) == 0:
+            creando_estrellas(5)
+            number_a = Number(str(random.randint(1, 5)))
+            number_b = Number(str(random.randint(1, 5)))
+            result = int(number_a.valor) + int(number_b.valor)
+            player.level += 1
+
+        if player.lifes == 0:
+            lost = True
+            lost_label = ALERT_FONT.render("GAME OVER", 1, WHITE)
+            WINDOW.blit(
+                lost_label,
+                (
+                    WIDTH / 2 - lost_label.get_width() / 2,
+                    HEIGHT / 2 - lost_label.get_height() / 2,
+                ),
+            )
 
         # Etiquetas
         labels(WINDOW, f"Level: {str(player.level)}", WIDTH - 15, 10)
         labels(WINDOW, f"Score: {str(player.score)}", WIDTH - 15, 40)
-        labels(WINDOW, f"Health: {str(player.health)}", WIDTH - 15, 70)
 
         # Dibujar corazones
         for live in range(player.lifes + 1):
             WINDOW.blit(
-                HEART_IMG, (WIDTH - HEART_IMG.get_width() * live - (15 * live), 100)
+                HEART_IMG, (WIDTH - HEART_IMG.get_width() * live - (15 * live), 75)
             )
 
         # Dibujar cuadros para operación matemática
