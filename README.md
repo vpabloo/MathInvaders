@@ -50,18 +50,15 @@ El juego termina cuando el jugador se queda sin vidas.
      
 2. Cuadrado iconos creados por Freepik - Flaticon
    * [CUADRADO NARANJA](https://www.flaticon.es/iconos-gratis/cuadrado)
-     
-4. Cuadrado iconos creados por Freepik - Flaticon
-   * [CUADRADO NARANJA](https://www.flaticon.es/iconos-gratis/cuadrado)
    
-5. Sustracción iconos creados por Flat Icons - Flaticon
+4. Sustracción iconos creados por Flat Icons - Flaticon
    * [RESTA](https://www.flaticon.es/iconos-gratis/sustraccion)
      
-6. Ui iconos creados por Flat Icons - Flaticon
+5. Ui iconos creados por Flat Icons - Flaticon
    * [SUMA](https://www.flaticon.es/iconos-gratis/ui)
      
-7. Igual iconos creados por Rohim - Flaticon
+6. Igual iconos creados por Rohim - Flaticon
    * [IGUAL](https://www.flaticon.es/iconos-gratis/igual)
 
-8. Corazón iconos creados por Kiranshastry - Flaticon
+7. Corazón iconos creados por Kiranshastry - Flaticon
    * [CORAZÓN](https://www.flaticon.es/iconos-gratis/corazon)
