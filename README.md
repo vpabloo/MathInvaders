@@ -1,10 +1,9 @@
-# Math Invaders
+# Math Invaders v0.1
 
 ## ***Con amor para mis hijos:***
 
 -- EN DESARROLLO --
 
-El juego no se encuentra terminado, sigo desarrollando para cumplir con la Descripción e instrucciones.
 
 ## **INTRODUCCIÓN**
 
