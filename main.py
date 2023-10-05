@@ -36,7 +36,7 @@ FPS = 60
 
 # main_font = pygame.font.SysFont("comicsans", 20)
 MAIN_FONT = pygame.font.Font("VT323-Regular.ttf", 30)
-ALERT_FONT = pygame.font.Font("VT323-Regular.ttf", 120)
+ALERT_FONT = pygame.font.Font("VT323-Regular.ttf", 100)
 
 
 # Etiquetas
@@ -124,7 +124,7 @@ class Laser(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.y += self.speedy
-        if self.rect.bottom < 0:
+        if self.rect.bottom < 0: # Para destruir los laser que salgan de pantalla
             self.kill()
 
 
@@ -277,5 +277,24 @@ def main():
 
         pygame.display.flip()
 
+def main_menu():
+    run = True
+    while run:
+        WINDOW.blit(BACKGROUND, (0,0))
+        title_label = ALERT_FONT.render("Click en para iniciar...", 1, (255,255,255))
+        WINDOW.blit(title_label, (WIDTH/2 - title_label.get_width()/2, 350))
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                player.lifes = 3
+                player.score = 0
+                player.level = 0
+                for star in star_list:
+                    star.kill()
+                main()
+    pygame.quit()
 
-main()
+
+main_menu()
