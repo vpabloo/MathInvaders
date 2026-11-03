@@ -1,0 +1,30 @@
+name: Verificar MathInvaders Web
+
+on:
+  push:
+    branches: [main, 'feature/**']
+    paths: ['web/**', '.github/workflows/web-ci.yml']
+  pull_request:
+    paths: ['web/**', '.github/workflows/web-ci.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar paquetes
+        run: npm install --no-audit --no-fund
+      - name: Pruebas de lógica
+        run: npm run test
+      - name: Verificación TypeScript y compilación
+        run: npm run build
