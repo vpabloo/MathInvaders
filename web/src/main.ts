@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import './style.css';
 import { GameScene } from './game/GameScene';
 import { gameEvents } from './game/events';
+import { shouldPreventGameScroll } from './game/keyboard';
 import { OPERATORS, type Operator, type RunSummary } from './math/engine';
 import {
   backend, currentUser, fetchMyBest, fetchSchoolLeaderboard,
@@ -252,16 +253,20 @@ async function saveFinishedRun(summary: RunSummary): Promise<void> {
 }
 
 startButton.addEventListener('click', () => scene.startGame());
-fireButton.addEventListener('pointerdown', (event) => {
-  event.preventDefault();
-  scene.fire();
-});
+// click cubre tanto pantallas táctiles como activación del botón por teclado.
+fireButton.addEventListener('click', () => scene.fire());
+// Phaser no siempre recibe keydown-SPACE si el foco ha quedado en la página
+// (por ejemplo, al usar el selector de modalidades). Escuchamos en window.
 window.addEventListener('keydown', (event) => {
-  if (event.code === 'Space' && event.target instanceof HTMLElement &&
-      !['INPUT', 'TEXTAREA', 'BUTTON'].includes(event.target.tagName)) {
-    event.preventDefault();
-  }
-});
+  if (!scene.isPlaying()) return;
+  const target = event.target;
+  if (target instanceof HTMLElement &&
+      (target.isContentEditable ||
+       Boolean(target.closest('input, textarea, select, button')))) return;
+
+  if (shouldPreventGameScroll(event.code)) event.preventDefault();
+  if (event.code === 'Space') scene.fire();
+}, { capture: true });
 
 showLocalRecord();
 void refreshSession();

@@ -82,4 +82,11 @@ No publicar códigos de inscripción en URLs, repositorios ni registros de conso
     web/supabase/schema.sql      # PostgreSQL, RLS y ranking
     web/public/assets/          # Imágenes, audio y fuentes originales
 
+### Controles de teclado
+
+- WASD **o flechas de dirección** para mover la nave (también en diagonal).
+- **Barra espaciadora** para disparar; se permite mantenerla presionada, con un disparo cada 180 ms.
+- El botón de **DISPARAR** también funciona con clic, tacto y activación de teclado.
+- Las flechas y la barra no desplazan la página cuando se está jugando; los campos del formulario de registro conservan su comportamiento normal.
+
 Phaser dibuja el juego; el motor matemático es independiente y testeable con Vitest.

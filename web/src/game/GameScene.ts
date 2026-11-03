@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { MathEngine, POINTS_PER_CORRECT, OPERATORS, type Operator, type RunSummary } from '../math/engine';
 import { gameEvents } from './events';
+import { movementVector } from './keyboard';
 
 const WIDTH = 1080;
 const HEIGHT = 686;
@@ -28,6 +29,7 @@ export class GameScene extends Phaser.Scene {
   private lasers: Phaser.GameObjects.Image[] = [];
   private overlay?: Phaser.GameObjects.Container;
   private keys?: Record<string, Phaser.Input.Keyboard.Key>;
+  private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private startedAt = 0;
   private lastShotAt = 0;
   private invulnerableUntil = 0;
@@ -71,7 +73,7 @@ export class GameScene extends Phaser.Scene {
       backgroundColor: '#071527',
     }).setDepth(16);
     this.add.text(30, HEIGHT - 38,
-      'WASD: mover  |  ESPACIO: disparar  |  Móvil: arrastra y usa DISPARAR', {
+      'WASD / FLECHAS: mover  |  ESPACIO: disparar  |  Móvil: arrastra y dispara', {
         fontFamily: font, fontSize: '23px', color: '#b9cee2',
         backgroundColor: '#071323',
       }).setDepth(16);
@@ -79,7 +81,9 @@ export class GameScene extends Phaser.Scene {
     this.ship = this.add.image(WIDTH / 2, HEIGHT - 92, 'rocket')
       .setDisplaySize(72, 72).setDepth(9);
     this.keys = this.input.keyboard?.addKeys('W,A,S,D') as Record<string, Phaser.Input.Keyboard.Key> | undefined;
-    this.input.keyboard?.on('keydown-SPACE', () => this.fire());
+    this.cursors = this.input.keyboard?.createCursorKeys();
+    // El disparo se atiende por window.keydown y por sondeo continuo mientras
+    // se sostiene ESPACIO. Evita depender de que Phaser reciba un evento aislado.
     this.input.keyboard?.on('keydown-ENTER', () => {
       if (this.phase !== 'playing') this.startGame();
     });
@@ -141,6 +145,10 @@ export class GameScene extends Phaser.Scene {
     this.spawnWave();
     this.setHud();
     gameEvents.emit('started');
+  }
+
+  isPlaying(): boolean {
+    return this.ready && this.phase === 'playing';
   }
 
   fire(): void {
@@ -265,12 +273,18 @@ export class GameScene extends Phaser.Scene {
     if (this.phase !== 'playing') return;
     const dt = Math.min(delta, 50) / 1000;
     const keys = this.keys;
-    let vx = Number(Boolean(keys?.D?.isDown)) - Number(Boolean(keys?.A?.isDown));
-    let vy = Number(Boolean(keys?.S?.isDown)) - Number(Boolean(keys?.W?.isDown));
+    const active = document.activeElement;
+    const typing = active instanceof HTMLElement &&
+      (active.isContentEditable || Boolean(active.closest('input, textarea, select')));
+    const { x: vx, y: vy } = typing ? { x: 0, y: 0 } : movementVector({
+      left: Boolean(keys?.A?.isDown || this.cursors?.left?.isDown),
+      right: Boolean(keys?.D?.isDown || this.cursors?.right?.isDown),
+      up: Boolean(keys?.W?.isDown || this.cursors?.up?.isDown),
+      down: Boolean(keys?.S?.isDown || this.cursors?.down?.isDown),
+    });
+    // Mantener ESPACIO dispara con el enfriamiento habitual de 180 ms.
+    if (!typing && this.cursors?.space?.isDown) this.fire();
     if (vx !== 0 || vy !== 0) {
-      const magnitude = Math.hypot(vx, vy);
-      vx /= magnitude;
-      vy /= magnitude;
       this.ship.x += vx * 330 * dt;
       this.ship.y += vy * 330 * dt;
     } else if (this.input.activePointer.isDown) {
