@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { MathEngine, POINTS_PER_CORRECT, OPERATORS, type Operator, type RunSummary } from '../math/engine';
+import { MathEngine, POINTS_PER_CORRECT, OPERATORS, maxAnswerForLevel, type Operator, type RunSummary } from '../math/engine';
 import { gameEvents } from './events';
 import { movementVector } from './keyboard';
 
@@ -203,7 +203,7 @@ export class GameScene extends Phaser.Scene {
     const q = this.engine.question;
     const operationSymbol = q.operator === '*' ? '×' : q.operator === '/' ? '÷' : q.operator;
     this.equationLabel?.setText(q.left + ' ' + operationSymbol + ' ' + q.right + ' = ?');
-    this.levelLabel?.setText('NIVEL ' + this.engine.level);
+    this.levelLabel?.setText('NIVEL ' + this.engine.level + ' · HASTA ' + maxAnswerForLevel(this.engine.level));
     this.scoreLabel?.setText('PUNTOS ' + this.engine.score);
     this.lifeLabel?.setText('VIDAS ' + '♥'.repeat(this.engine.lives));
     this.operationLabel?.setText(

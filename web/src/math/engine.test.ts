@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MathEngine, OPERATORS, POINTS_PER_CORRECT, normalizeOperators } from './engine';
+import { MathEngine, OPERATORS, POINTS_PER_CORRECT, maxAnswerForLevel, normalizeOperators } from './engine';
 
 describe('Modalidades y puntuación MathInvaders', () => {
   it('exige alguna modalidad y elimina selecciones repetidas', () => {
@@ -83,6 +83,72 @@ describe('Modalidades y puntuación MathInvaders', () => {
     expect(summary.operation_points['*']).toBe(-penalty);
     expect(summary.selected_operators).toEqual(['*']);
     expect(summary.duration_seconds).toBe(2);
+  });
+
+
+  it('mantiene los resultados y las cinco opciones entre 0 y 10 en niveles 1–3', () => {
+    for (const operator of OPERATORS) {
+      const engine = new MathEngine(Math.random, [operator]);
+      for (const level of [1, 2, 3]) {
+        engine.level = level;
+        for (let round = 0; round < 150; round++) {
+          const q = engine.nextQuestion();
+          expect(q.answer).toBeGreaterThanOrEqual(0);
+          expect(q.answer).toBeLessThanOrEqual(10);
+          expect(q.options).toHaveLength(5);
+          expect(new Set(q.options).size).toBe(5);
+          expect(q.options.every((option) => Number.isInteger(option) && option >= 0 && option <= 10)).toBe(true);
+          if (operator === '/') {
+            expect(q.left).toBeLessThanOrEqual(20);
+            expect(q.right).toBeGreaterThan(0);
+            expect(q.left % q.right).toBe(0);
+          }
+        }
+      }
+    }
+  });
+
+  it('aumenta la dificultad gradualmente cada dos niveles a partir del cuarto', () => {
+    const expected = [
+      [1, 10], [2, 10], [3, 10],
+      [4, 15], [5, 15], [6, 20], [7, 20],
+      [8, 30], [9, 30], [10, 40], [11, 40],
+      [12, 50], [13, 50],
+    ];
+    for (const [level, cap] of expected) expect(maxAnswerForLevel(level)).toBe(cap);
+    expect(maxAnswerForLevel(300)).toBe(999);
+    expect(() => maxAnswerForLevel(0)).toThrow(RangeError);
+    expect(() => maxAnswerForLevel(2.5)).toThrow(RangeError);
+  });
+
+  it('genera cifras más grandes en cada operación tras subir niveles', () => {
+    for (const operator of OPERATORS) {
+      const engine = new MathEngine(Math.random, [operator]);
+      for (const level of [4, 6, 8, 12, 20]) {
+        engine.level = level;
+        const cap = maxAnswerForLevel(level);
+        let exceededTen = false;
+        for (let round = 0; round < 250; round++) {
+          const q = engine.nextQuestion();
+          expect(q.answer).toBeLessThanOrEqual(cap);
+          expect(q.options.every((n) => n >= 0 && n <= cap)).toBe(true);
+          if (q.answer > 10) exceededTen = true;
+          if (operator === '/') expect(q.left / q.right).toBe(q.answer);
+        }
+        expect(exceededTen).toBe(true);
+      }
+    }
+  });
+
+  it('la subida de nivel modifica el límite solo después de los aciertos', () => {
+    const game = new MathEngine(Math.random, ['+']);
+    for (let i = 0; i < 15; i++) {
+      expect(game.question.answer).toBeLessThanOrEqual(maxAnswerForLevel(game.level));
+      game.answer(game.question.answer);
+      game.nextQuestion();
+    }
+    expect(game.level).toBe(4);
+    expect(maxAnswerForLevel(game.level)).toBe(15);
   });
 
   it('reinicia el puntaje, pero conserva las modalidades seleccionadas', () => {
