@@ -33,6 +33,8 @@ create table if not exists public.scores (
   user_id uuid not null references auth.users(id) on delete cascade,
   client_run_id uuid not null,
   score integer not null check (score between 0 and 1000000),
+  selected_operators text[] not null default array['+']::text[],
+  operation_points jsonb not null default '{"+":0,"-":0,"*":0,"/":0}'::jsonb,
   correct_count integer not null check (correct_count between 0 and 100000),
   wrong_count integer not null check (wrong_count between 0 and 100000),
   level_reached integer not null check (level_reached >= 1),
@@ -43,7 +45,7 @@ create table if not exists public.scores (
     level_reached = 1 + correct_count / 5
   ),
   constraint basic_score_ceiling check (
-    score <= correct_count * (10 * level_reached)
+    score <= correct_count * (40 * level_reached)
   ),
   constraint basic_play_rate check (
     correct_count <= duration_seconds * 8

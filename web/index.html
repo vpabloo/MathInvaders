@@ -20,6 +20,37 @@
     <main class="layout">
       <section class="game-column" aria-label="Videojuego MathInvaders">
         <div class="section-caption"><span class="dot"></span> Misión matemática <span class="mode-pill">PHASER WEB</span></div>
+        <section class="card modes-card" aria-labelledby="modes-title">
+          <div class="card-title">
+            <h2 id="modes-title">Modalidades de juego</h2>
+            <span class="tag">ELIGE UNA O VARIAS</span>
+          </div>
+          <p class="subtle">Elige qué operaciones aparecerán. Las más difíciles otorgan más puntos por acierto.</p>
+          <fieldset id="mode-fieldset" class="mode-fieldset">
+            <legend class="sr-only">Operaciones matemáticas</legend>
+            <label class="mode-choice">
+              <input type="checkbox" data-operator="+" checked />
+              <span class="mode-symbol">+</span>
+              <span class="mode-detail"><strong>Suma</strong><small>10 pts × nivel</small></span>
+            </label>
+            <label class="mode-choice">
+              <input type="checkbox" data-operator="-" />
+              <span class="mode-symbol">−</span>
+              <span class="mode-detail"><strong>Resta</strong><small>20 pts × nivel</small></span>
+            </label>
+            <label class="mode-choice">
+              <input type="checkbox" data-operator="*" />
+              <span class="mode-symbol">×</span>
+              <span class="mode-detail"><strong>Multiplicación</strong><small>30 pts × nivel</small></span>
+            </label>
+            <label class="mode-choice">
+              <input type="checkbox" data-operator="/" />
+              <span class="mode-symbol">÷</span>
+              <span class="mode-detail"><strong>División</strong><small>40 pts × nivel</small></span>
+            </label>
+          </fieldset>
+          <p class="mode-note" id="mode-note" aria-live="polite">Selecciona al menos una modalidad antes de empezar.</p>
+        </section>
         <div class="game-frame"><div id="game" role="application" aria-label="Área de juego. Usa W A S D para mover y espacio para disparar"></div></div>
         <div class="controls">
           <button class="primary-button" id="start-button" type="button" disabled>▶ INICIAR PARTIDA</button>
@@ -44,6 +75,15 @@
           <div class="stat-grid">
             <div><strong id="games-count">0</strong><span>Partidas</span></div>
             <div><strong id="total-score">0</strong><span>Puntos acumulados</span></div>
+          </div>
+          <div class="operation-totals">
+            <h3>Puntos acumulados por operación</h3>
+            <div class="operation-totals-grid">
+              <div><span>+ Suma</span><strong id="points-addition">0</strong></div>
+              <div><span>− Resta</span><strong id="points-subtraction">0</strong></div>
+              <div><span>× Multiplicación</span><strong id="points-multiplication">0</strong></div>
+              <div><span>÷ División</span><strong id="points-division">0</strong></div>
+            </div>
           </div>
           <p class="notice" id="save-message" aria-live="polite">Los récords de invitado se guardan en este navegador.</p>
         </section>
