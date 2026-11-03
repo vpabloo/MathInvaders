@@ -73,3 +73,11 @@ En entornos sin pantalla, establecer SDL_VIDEODRIVER=dummy y SDL_AUDIODRIVER=dum
 
 7. Corazón iconos creados por Kiranshastry - Flaticon
    * [CORAZÓN](https://www.flaticon.es/iconos-gratis/corazon)
+
+
+## Versión web (Phaser)
+
+La versión de navegador con controles táctiles, ranking local y preparación para cuentas
+está en la carpeta [web/](web/README.md). La versión Python/Pygame permanece disponible.
+
+Para ejecutar localmente: cd web && npm install && npm run dev.

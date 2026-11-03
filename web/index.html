@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#071126" />
+  <meta name="description" content="MathInvaders: aprende matemáticas mientras defiendes la galaxia. Juego gratuito de cálculo mental para estudiantes." />
+  <title>MathInvaders | Academia espacial</title>
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">✦</div>
+        <div><span class="eyebrow">ACADEMIA ESPACIAL</span><h1>Math<span>Invaders</span></h1></div>
+      </div>
+      <div class="status" id="session-status" aria-live="polite">Modo invitado</div>
+    </header>
+
+    <main class="layout">
+      <section class="game-column" aria-label="Videojuego MathInvaders">
+        <div class="section-caption"><span class="dot"></span> Misión matemática <span class="mode-pill">PHASER WEB</span></div>
+        <div class="game-frame"><div id="game" role="application" aria-label="Área de juego. Usa W A S D para mover y espacio para disparar"></div></div>
+        <div class="controls">
+          <button class="primary-button" id="start-button" type="button" disabled>▶ INICIAR PARTIDA</button>
+          <button class="fire-button" id="fire-button" type="button">◎ DISPARAR <span>ESPACIO</span></button>
+        </div>
+        <p class="hint">Escritorio: <strong>W A S D</strong> para mover y <strong>ESPACIO</strong> para disparar. Móvil: mantén el dedo sobre el juego para dirigir la nave y pulsa <strong>DISPARAR</strong>.</p>
+        <section class="card rules">
+          <h2>¿Cómo funciona?</h2>
+          <div class="steps">
+            <div><strong>01</strong><p>Resuelve la operación matemática.</p></div>
+            <div><strong>02</strong><p>Busca la estrella con la respuesta correcta.</p></div>
+            <div><strong>03</strong><p>Dispara, gana puntos y supera tu récord.</p></div>
+          </div>
+        </section>
+      </section>
+
+      <aside class="sidebar">
+        <section class="card stats-card">
+          <div class="card-title"><h2>Mi progreso</h2><span class="tag">LOCAL</span></div>
+          <div class="stat-number" id="best-score">0</div>
+          <div class="stat-label">RÉCORD PERSONAL</div>
+          <div class="stat-grid">
+            <div><strong id="games-count">0</strong><span>Partidas</span></div>
+            <div><strong id="total-score">0</strong><span>Puntos acumulados</span></div>
+          </div>
+          <p class="notice" id="save-message" aria-live="polite">Los récords de invitado se guardan en este navegador.</p>
+        </section>
+
+        <section class="card profile-card">
+          <div class="card-title"><h2>Cuenta de alumno</h2><span class="tag" id="account-tag">OPCIONAL</span></div>
+          <p class="subtle" id="account-description">Crea tu cuenta para vincular tu récord a tu escuela o academia.</p>
+          <div id="auth-disabled" class="notice" hidden>El registro en línea aún no está activado. El videojuego funciona sin iniciar sesión.</div>
+
+          <form id="auth-form" class="form-stack">
+            <label for="student-name">Nombre visible</label>
+            <input id="student-name" maxlength="60" autocomplete="nickname" placeholder="Tu nombre o alias" />
+            <label for="student-email">Correo electrónico</label>
+            <input id="student-email" type="email" autocomplete="email" placeholder="alumno@ejemplo.com" required />
+            <label for="student-password">Contraseña</label>
+            <input id="student-password" type="password" autocomplete="current-password" minlength="8" placeholder="Mínimo 8 caracteres" required />
+            <div class="form-actions">
+              <button class="small-primary" id="login-button" type="submit">Entrar</button>
+              <button class="small-secondary" id="register-button" type="button">Registrarme</button>
+            </div>
+          </form>
+
+          <div id="signed-in" hidden>
+            <p class="welcome" id="welcome-message"></p>
+            <p class="subtle" id="online-best"></p>
+            <form id="school-form" class="form-stack">
+              <label for="school-code">Código de tu escuela o academia</label>
+              <input id="school-code" type="text" maxlength="40" autocomplete="off" placeholder="Código entregado por la institución" />
+              <button class="small-primary" type="submit">Vincular institución</button>
+            </form>
+            <p id="school-membership" class="notice" hidden></p>
+            <button id="logout-button" class="text-button" type="button">Cerrar sesión</button>
+          </div>
+          <p class="form-feedback" id="auth-feedback" aria-live="polite"></p>
+        </section>
+
+        <section class="card leaderboard-card">
+          <div class="card-title"><h2>Ranking de escuelas</h2><span class="tag">COLECTIVO</span></div>
+          <p class="subtle">Cada escuela suma el <strong>mejor récord</strong> de cada uno de sus alumnos; no se suman partidas repetidas.</p>
+          <table aria-label="Clasificación de escuelas y academias">
+            <thead><tr><th>#</th><th>Institución</th><th>Alumnos</th><th>Puntos</th></tr></thead>
+            <tbody id="leaderboard-body"><tr><td colspan="4">Sin clasificación disponible.</td></tr></tbody>
+          </table>
+          <p class="notice">El ranking institucional no publica información personal de alumnos.</p>
+        </section>
+      </aside>
+    </main>
+    <footer>MathInvaders · Aprende jugando · Versión web Phaser · <a href="https://github.com/vpabloo/MathInvaders" target="_blank" rel="noopener noreferrer">Código fuente</a></footer>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
