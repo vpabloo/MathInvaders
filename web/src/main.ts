@@ -2,12 +2,14 @@ import Phaser from 'phaser';
 import './style.css';
 import { GameScene } from './game/GameScene';
 import { gameEvents } from './game/events';
-import type { RunSummary } from './math/engine';
+import { OPERATORS, type Operator, type RunSummary } from './math/engine';
 import {
   backend, currentUser, fetchMyBest, fetchSchoolLeaderboard,
   getProfile, joinSchool, signIn, signOut, signUp, submitRun,
 } from './services/backend';
-import { readLocalRecord, saveLocalRun } from './services/storage';
+import {
+  readLocalRecord, saveLocalRun, readSelectedOperators, saveSelectedOperators,
+} from './services/storage';
 
 function el<T extends HTMLElement>(id: string): T {
   const value = document.getElementById(id);
@@ -37,6 +39,13 @@ function showLocalRecord(): void {
   el<HTMLElement>('best-score').textContent = pretty(local.best);
   el<HTMLElement>('games-count').textContent = pretty(local.games);
   el<HTMLElement>('total-score').textContent = pretty(local.total);
+  const ids: Record<Operator, string> = {
+    '+': 'points-addition', '-': 'points-subtraction',
+    '*': 'points-multiplication', '/': 'points-division',
+  };
+  for (const operator of OPERATORS) {
+    el<HTMLElement>(ids[operator]).textContent = pretty(local.operationTotals[operator]);
+  }
 }
 
 function message(text: string): void {
@@ -171,14 +180,51 @@ schoolForm.addEventListener('submit', (event) => {
 });
 
 const scene = new GameScene();
+const modesFieldset = el<HTMLFieldSetElement>('mode-fieldset');
+const modeNote = el<HTMLElement>('mode-note');
+const modeInputs = Array.from(document.querySelectorAll<HTMLInputElement>('input[data-operator]'));
+const savedModes = readSelectedOperators();
+for (const input of modeInputs) input.checked = savedModes.includes(input.dataset.operator as Operator);
+scene.setOperators(savedModes);
+
+function updateModeNote(operators: readonly Operator[]): void {
+  modeNote.classList.remove('warning');
+  modeNote.textContent = operators.length === 4
+    ? 'Modo completo: las cuatro operaciones están activadas.'
+    : 'Modalidades seleccionadas: ' + operators.length +
+      '. Puedes combinarlas en una sola partida.';
+}
+updateModeNote(savedModes);
+for (const input of modeInputs) {
+  input.addEventListener('change', () => {
+    const selected = modeInputs.filter((item) => item.checked)
+      .map((item) => item.dataset.operator as Operator);
+    if (!selected.length) {
+      input.checked = true;
+      modeNote.classList.add('warning');
+      modeNote.textContent = 'Debes seleccionar al menos una operación.';
+      return;
+    }
+    saveSelectedOperators(selected);
+    scene.setOperators(selected);
+    updateModeNote(selected);
+  });
+}
 gameEvents.on('ready', () => {
   startButton.disabled = false;
   startButton.textContent = '▶ INICIAR PARTIDA';
 });
 gameEvents.on('started', () => {
-  startButton.textContent = '↻ REINICIAR PARTIDA';
+  startButton.textContent = 'PARTIDA EN CURSO';
+  startButton.disabled = true;
+  modesFieldset.disabled = true;
+  modeNote.textContent = 'Las modalidades se bloquean durante la partida.';
 });
 gameEvents.on('finished', (summary: RunSummary) => {
+  startButton.disabled = false;
+  startButton.textContent = '▶ JUGAR DE NUEVO';
+  modesFieldset.disabled = false;
+  updateModeNote(readSelectedOperators());
   void saveFinishedRun(summary);
 });
 

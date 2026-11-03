@@ -18,6 +18,25 @@ Abrir http://localhost:5173. Para verificar:
 
 El juego funciona como **invitado sin base de datos**. El récord y las partidas se guardan localmente en el navegador (no se transfieren entre dispositivos).
 
+## Modalidades matemáticas y puntuación
+
+El menú muestra cuatro casillas y permite seleccionar **una o varias** modalidades antes de empezar. La selección se guarda en el navegador y queda bloqueada mientras dure una partida.
+
+| Modalidad | Puntos por respuesta correcta |
+| --- | ---: |
+| Suma (+) | 10 × nivel |
+| Resta (−) | 20 × nivel |
+| Multiplicación (×) | 30 × nivel |
+| División (÷) | 40 × nivel |
+
+- Cada 5 aciertos se sube un nivel. Las modalidades seleccionadas se mezclan aleatoriamente desde el nivel 1; ninguna requiere desbloqueo.
+- Las restas no producen resultados negativos; las divisiones siempre son exactas, sin cero en el divisor.
+- Una respuesta incorrecta resta del marcador global y del **marcador específico de la operación** el máximo entre 1 y la mitad entera de la opción incorrecta.
+- En pantalla se ven tanto el total como el subtotal por operación; la sección **Mi progreso** acumula los puntos netos por modalidad entre partidas. Los récords locales anteriores se conservan sin desglose histórico.
+- El resumen de cada partida registra selected_operators y operation_points. El ranking escolar conserva la regla de **mejor partida por alumno** (comparación ponderada por dificultad).
+
+Si tu instancia Supabase ya ejecutó el esquema anterior, aplica una sola vez la migración de web/supabase/migrations/20261103_operation_modalities.sql. En una instalación nueva, basta el schema.sql actualizado.
+
 ## Publicación (GitHub Pages)
 
 El workflow .github/workflows/deploy-web.yml compila la carpeta web/ y despliega web/dist desde la rama main. Incluye la ruta base /MathInvaders/ para recursos estáticos.
@@ -35,7 +54,7 @@ Para otros dominios/servidores, compilar desde web/ con DEPLOY_BASE_PATH=/ npm r
 La aplicación soporta **Supabase Auth + PostgreSQL** sin servidor de juegos propio.
 
 1. Crear un proyecto en Supabase, activar email/password y **confirmación por correo**. Configurar Site URL y Redirect URLs para incluir https://vpabloo.github.io/MathInvaders/ (o tu dominio final).
-2. Ejecutar web/supabase/schema.sql en el SQL Editor de Supabase (como administrador).
+2. Ejecutar web/supabase/schema.sql en el SQL Editor de Supabase (como administrador). Si ya se había instalado la base, ejecutar la migración indicada en **Modalidades matemáticas y puntuación**.
 3. Crear escuelas o academias y códigos privados mediante el ejemplo SQL del final del archivo. Entregar cada código únicamente al responsable de la institución.
 4. En desarrollo: copiar .env.example a .env.local y configurar VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.
 5. Para GitHub Pages: crear las **Repository Variables** VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en Settings → Secrets and variables → Actions → Variables. Se incorporan durante la compilación. Son claves públicas del cliente; **nunca** poner service_role ni secretos privados.

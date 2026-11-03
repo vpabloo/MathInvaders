@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { MathEngine, type RunSummary } from '../math/engine';
+import { MathEngine, POINTS_PER_CORRECT, OPERATORS, type Operator, type RunSummary } from '../math/engine';
 import { gameEvents } from './events';
 
 const WIDTH = 1080;
@@ -23,6 +23,7 @@ export class GameScene extends Phaser.Scene {
   private scoreLabel!: Phaser.GameObjects.Text;
   private levelLabel!: Phaser.GameObjects.Text;
   private lifeLabel!: Phaser.GameObjects.Text;
+  private operationLabel!: Phaser.GameObjects.Text;
   private stars: FallingStar[] = [];
   private lasers: Phaser.GameObjects.Image[] = [];
   private overlay?: Phaser.GameObjects.Container;
@@ -64,6 +65,10 @@ export class GameScene extends Phaser.Scene {
     }).setDepth(16);
     this.lifeLabel = this.add.text(855, 60, '', {
       fontFamily: font, fontSize: '30px', color: '#ffb3bd',
+    }).setDepth(16);
+    this.operationLabel = this.add.text(36, 130, '', {
+      fontFamily: font, fontSize: '27px', color: '#a8ffd8',
+      backgroundColor: '#071527',
     }).setDepth(16);
     this.add.text(30, HEIGHT - 38,
       'WASD: mover  |  ESPACIO: disparar  |  Móvil: arrastra y usa DISPARAR', {
@@ -115,6 +120,12 @@ export class GameScene extends Phaser.Scene {
     ]).setDepth(100);
   }
 
+  setOperators(operators: readonly Operator[]): void {
+    if (this.phase === 'playing') return;
+    this.engine.setOperators(operators);
+    this.setHud();
+  }
+
   startGame(): void {
     if (!this.ready) return;
     this.engine.reset();
@@ -158,7 +169,7 @@ export class GameScene extends Phaser.Scene {
         .setDisplaySize(72, 72).setDepth(5);
       const label = this.add.text(x, y, String(number), {
         fontFamily: 'VT323, monospace',
-        fontSize: '44px',
+        fontSize: number >= 100 ? '33px' : '44px',
         color: '#ffffff',
         stroke: '#0c102c',
         strokeThickness: 6,
@@ -182,10 +193,18 @@ export class GameScene extends Phaser.Scene {
 
   private setHud(): void {
     const q = this.engine.question;
-    this.equationLabel?.setText(q.left + ' ' + q.operator + ' ' + q.right + ' = ?');
+    const operationSymbol = q.operator === '*' ? '×' : q.operator === '/' ? '÷' : q.operator;
+    this.equationLabel?.setText(q.left + ' ' + operationSymbol + ' ' + q.right + ' = ?');
     this.levelLabel?.setText('NIVEL ' + this.engine.level);
     this.scoreLabel?.setText('PUNTOS ' + this.engine.score);
     this.lifeLabel?.setText('VIDAS ' + '♥'.repeat(this.engine.lives));
+    this.operationLabel?.setText(
+      OPERATORS.map(op => {
+        const symbol = op === '*' ? '×' : op === '/' ? '÷' : op;
+        return symbol + ' ' + this.engine.operationPoints[op];
+      }).join('    ') + '   |   ACIERTO ' +
+      (POINTS_PER_CORRECT[q.operator] * this.engine.level) + ' PTS',
+    );
   }
 
   private showFeedback(message: string, color: string, x: number, y: number): void {
@@ -214,8 +233,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   private processHit(star: FallingStar): void {
+    const pointsForCorrect = POINTS_PER_CORRECT[this.engine.question.operator] * this.engine.level;
     const correct = this.engine.answer(star.number);
-    this.showFeedback(correct ? '¡CORRECTO!' : 'INCORRECTO',
+    this.showFeedback(correct ? '+' + pointsForCorrect + ' PUNTOS' : 'INCORRECTO',
       correct ? '#67ffb2' : '#ff7482', star.sprite.x, star.sprite.y);
     if (correct) {
       this.engine.nextQuestion();

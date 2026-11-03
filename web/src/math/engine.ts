@@ -1,6 +1,25 @@
-/** Motor matemático, independiente de Phaser y del navegador. */
-export type Operator = '+' | '-';
+/** Motor matemático puro: modalidades, preguntas y puntuaciones sin Phaser. */
+export type Operator = '+' | '-' | '*' | '/';
 export type RandomSource = () => number;
+
+export const OPERATORS: readonly Operator[] = ['+', '-', '*', '/'];
+export const POINTS_PER_CORRECT: Readonly<Record<Operator, number>> = {
+  '+': 10,
+  '-': 20,
+  '*': 30,
+  '/': 40,
+};
+export const OPERATION_NAMES: Readonly<Record<Operator, string>> = {
+  '+': 'Suma',
+  '-': 'Resta',
+  '*': 'Multiplicación',
+  '/': 'División',
+};
+
+export type OperationPoints = Record<Operator, number>;
+
+export const emptyOperationPoints = (): OperationPoints =>
+  ({ '+': 0, '-': 0, '*': 0, '/': 0 });
 
 export interface Question {
   left: number;
@@ -17,9 +36,11 @@ export interface RunSummary {
   level_reached: number;
   duration_seconds: number;
   client_run_id: string;
+  selected_operators: Operator[];
+  operation_points: OperationPoints;
 }
 
-const integer = (rng: RandomSource, min: number, max: number) =>
+const integer = (rng: RandomSource, min: number, max: number): number =>
   Math.floor(rng() * (max - min + 1)) + min;
 
 export function shuffle<T>(items: T[], rng: RandomSource): T[] {
@@ -31,18 +52,33 @@ export function shuffle<T>(items: T[], rng: RandomSource): T[] {
   return result;
 }
 
+export function normalizeOperators(values: readonly string[]): Operator[] {
+  const selected = OPERATORS.filter((op) => values.includes(op));
+  if (!selected.length) throw new Error('Selecciona al menos una modalidad');
+  return selected;
+}
+
 export class MathEngine {
   score = 0;
   lives = 3;
   level = 1;
   correctCount = 0;
   wrongCount = 0;
+  operationPoints: OperationPoints = emptyOperationPoints();
+  selectedOperators: Operator[];
   question!: Question;
   private completed = false;
   private readonly random: RandomSource;
 
-  constructor(random: RandomSource = Math.random) {
+  constructor(random: RandomSource = Math.random, operators: readonly Operator[] = ['+']) {
     this.random = random;
+    this.selectedOperators = normalizeOperators(operators);
+    this.nextQuestion();
+  }
+
+  /** Solo debe cambiarse fuera de una partida; conserva la selección al reiniciar. */
+  setOperators(operators: readonly Operator[]): void {
+    this.selectedOperators = normalizeOperators(operators);
     this.nextQuestion();
   }
 
@@ -52,6 +88,7 @@ export class MathEngine {
     this.level = 1;
     this.correctCount = 0;
     this.wrongCount = 0;
+    this.operationPoints = emptyOperationPoints();
     this.completed = false;
     this.nextQuestion();
   }
@@ -64,24 +101,43 @@ export class MathEngine {
     let answer = 0;
 
     for (let attempt = 0; attempt < 30; attempt++) {
-      operator = this.level < 3 || this.random() < 0.5 ? '+' : '-';
-      if (operator === '+') {
-        left = integer(this.random, 1, 5);
-        right = integer(this.random, 1, 5);
-        answer = left + right;
-      } else {
-        left = integer(this.random, 1, 10);
-        right = integer(this.random, 0, left);
-        answer = left - right;
+      operator = this.selectedOperators[integer(this.random, 0, this.selectedOperators.length - 1)];
+      switch (operator) {
+        case '+':
+          left = integer(this.random, 1, 9);
+          right = integer(this.random, 1, 9);
+          answer = left + right;
+          break;
+        case '-':
+          left = integer(this.random, 1, 18);
+          right = integer(this.random, 0, left);
+          answer = left - right;
+          break;
+        case '*':
+          left = integer(this.random, 1, 9);
+          right = integer(this.random, 1, 9);
+          answer = left * right;
+          break;
+        case '/': {
+          // Producto construido de un cociente entero; sin cero ni decimales.
+          right = integer(this.random, 1, 9);
+          answer = integer(this.random, 1, 9);
+          left = right * answer;
+          break;
+        }
       }
       if (!previous || previous.left !== left ||
           previous.right !== right || previous.operator !== operator) break;
     }
 
+    // Distractores próximos a la respuesta: funcionan incluso si es > 10.
+    const lower = Math.max(0, answer - 12);
     const distractors = shuffle(
-      Array.from({ length: 11 }, (_, index) => index).filter((n) => n !== answer),
+      Array.from({ length: answer + 13 - lower }, (_, i) => lower + i)
+        .filter((n) => n !== answer),
       this.random,
     ).slice(0, 4);
+
     this.question = {
       left, right, operator, answer,
       options: shuffle([answer, ...distractors], this.random),
@@ -94,15 +150,20 @@ export class MathEngine {
     if (this.completed) throw new Error('La ronda ya terminó');
     if (!this.question.options.includes(value)) throw new Error('Opción inválida');
 
+    const operator = this.question.operator;
     if (value === this.question.answer) {
-      this.score += Math.max(1, value) * this.level;
+      const earned = POINTS_PER_CORRECT[operator] * this.level;
+      this.score += earned;
+      this.operationPoints[operator] += earned;
       this.correctCount += 1;
       this.level = 1 + Math.floor(this.correctCount / 5);
       this.completed = true;
       return true;
     }
 
-    this.score -= Math.max(1, Math.floor(Math.abs(value) / 2));
+    const penalty = Math.max(1, Math.floor(Math.abs(value) / 2));
+    this.score -= penalty;
+    this.operationPoints[operator] -= penalty;
     this.wrongCount += 1;
     return false;
   }
@@ -120,6 +181,8 @@ export class MathEngine {
       level_reached: this.level,
       duration_seconds: Math.max(1, Math.floor(seconds)),
       client_run_id: runId,
+      selected_operators: [...this.selectedOperators],
+      operation_points: { ...this.operationPoints },
     };
   }
 }
