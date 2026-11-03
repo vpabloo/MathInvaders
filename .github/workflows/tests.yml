@@ -1,0 +1,24 @@
+name: Pruebas de MathInvaders
+
+on:
+  push:
+    branches: [main, "refactor/**"]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      SDL_VIDEODRIVER: dummy
+      SDL_AUDIODRIVER: dummy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+      - name: Verificar sintaxis
+        run: python -m compileall -q main.py mathinvaders tests
+      - name: Ejecutar pruebas
+        run: python -m unittest discover -s tests -v

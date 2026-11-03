@@ -1,41 +1,52 @@
-# Math Invaders v0.1
+# MathInvaders
 
-## ***Con amor para mis hijos:***
+Juego educativo de cálculo mental inspirado en Space Invaders, desarrollado en Python + Pygame.
 
--- EN DESARROLLO --
+Con amor para mis hijos.
 
+![Captura original](images/Screenshot%202023-09-29%20123631.png)
 
-## **INTRODUCCIÓN**
+## Reglas
 
-El juego **Math Invaders** es un divertido juego desarrollado en [PyGame](https://www.pygame.org/) que tiene como principal finalidad, promover en los niños la práctica de operaciones matemáticas básicas (sumas y restas -por ahora-).
+1. Resuelve la operación que se muestra arriba a la izquierda.
+2. Mueve la nave con **W A S D** y dispara con **ESPACIO** a la única estrella que contiene la respuesta correcta.
+3. **Acierto:** ganas puntos y comienza inmediatamente una operación nueva. No hace falta destruir los distractores.
+4. **Error:** se descuentan puntos y se conserva la operación hasta acertar.
+5. Cada **5 respuestas correctas** aumenta el nivel. Desde el nivel **3** aparecen restas; a partir del **5** aparecen estrellas más rápidas.
+6. El choque con una estrella quita una vida (con invulnerabilidad temporal). Dispones de 3 vidas.
 
-## **DESCRIPCIÓN E INSTRUCCIONES**
+Los aciertos suman como mínimo 1 punto multiplicado por el nivel actual. Un error descuenta el máximo entre 1 y la mitad entera del número incorrecto. La puntuación puede ser negativa.
 
-En pantalla se muestra una _Nave espacial_ capaz de moverse libremente en cualquier dirección dentro de los límites de la ventana (izquierda, derecha, arriba y abajo). La Nave espacial tiene la capacidad de lanzar un rayo láser cada que el jugador lo requiera para destruir _estrellas numéricas_.
+## Instalación
 
-Cada estrella numérica, etiquetada con un número que representa su valor, se traslada de manera vertical de la parte superior hacia la parte inferior de la ventana, a una velocidad que va aumentando conforme el juego avanza y el jugador sube de nivel.
+Requiere Python 3.10 o superior.
 
-Al mismo tiempo en la parte superior izquierda de la pantalla se muestra una operación matemática que va cambiando cada nivel avanzado.
+    python -m venv .venv
+    source .venv/bin/activate  # Windows: .venv\Scripts\activate
+    pip install -r requirements.txt
+    python main.py
 
-El jugador debe resolver la operación matemática y utilzando la nave espacial disparar a la estrella que lleve la respuesta correcta, con esto el jugador obtendrá la cantidad de puntos igual a la respuesta correcta (etiqueta de la estrella) y se sumará al puntaje acumulado mostrado en la parte superior derecha.
+El programa busca los archivos multimedia en la carpeta del proyecto, incluso si se ejecuta desde otro directorio. **ENTER** o clic para comenzar, **R** para reiniciar y **ESC** para salir.
 
-En caso de destruir una estrella con la respuesta incorrecta se restará del marcador acumulado la mitad del valor de la etiqueta numérica de la estrella. (Solo para el caso del número 1 se restará 1 y para números impares se redondea hacia el entero inferior).
+## Arquitectura
 
-Si la nave espacial es tocada por una estrella se descontará una vida de las tres vidas con las que inicial e jugador, estas vidas están representadas por un corazón ubicado en la parte superior derecha.
+    main.py                      # Presentación, recursos, eventos, sonido y bucle
+    mathinvaders/logic.py        # Preguntas, respuestas, puntuación, vidas y niveles (sin Pygame)
+    mathinvaders/sprites.py      # Nave, disparos y estrellas; movimiento con delta time
+    tests/test_logic.py          # Pruebas de la lógica educativa
+    tests/test_game.py           # Integración con Pygame usando pantalla virtual
+    .github/workflows/tests.yml  # Pruebas automáticas
 
-El juego termina cuando el jugador se queda sin vidas.
+Imágenes y fuentes se cargan una sola vez, las etiquetas numéricas se dibujan solo al crear cada estrella y el bucle se limita a 60 FPS. El movimiento usa tiempo por fotograma y coordenadas decimales.
 
-## **CONTROLES del teclado:** 
-   * "A" para ir a la izquierda.
-   * "D" para ir a la derecha.
-   * "W" para ir arriba.
-   * "S" para ir hacia abajo.
-   * BARRA ESPACIADORA para disparar
+## Pruebas
 
-## **SCREENSHOOT**
-![Screenshot](/images/Screenshot%202023-09-29%20123631.png)
+    python -m unittest discover -s tests -v
 
-## **CREDITOS DE IMAGENES**
+En entornos sin pantalla, establecer SDL_VIDEODRIVER=dummy y SDL_AUDIODRIVER=dummy. GitHub Actions ejecuta estas pruebas en las nuevas ramas y pull requests.
+
+## Créditos
+
 1. Iconos creados por Smashicons - Flaticon
    * [NUMERO 1](https://www.flaticon.es/iconos-gratis/numero-1)
    * [NUMERO 2](https://www.flaticon.es/iconos-gratis/numero-2)
