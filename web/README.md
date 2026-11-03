@@ -30,6 +30,22 @@ El menú muestra cuatro casillas y permite seleccionar **una o varias** modalida
 | División (÷) | 40 × nivel |
 
 - Cada 5 aciertos se sube un nivel. Las modalidades seleccionadas se mezclan aleatoriamente desde el nivel 1; ninguna requiere desbloqueo.
+
+### Dificultad gradual
+
+El **resultado correcto y todas las opciones** tienen un límite por nivel. La progresión no depende de la operación elegida:
+
+| Niveles | Resultado máximo |
+| --- | ---: |
+| 1–3 | 10 |
+| 4–5 | 15 |
+| 6–7 | 20 |
+| 8–9 | 30 |
+| 10–11 | 40 |
+| 12–13 | 50 |
+
+A partir de ahí el límite aumenta **10 cada dos niveles** (hasta 999 por legibilidad de los sprites). Las sumas y restas utilizan enteros no negativos; las multiplicaciones mantienen el producto dentro del límite y las divisiones tienen cociente entero, sin divisores cero. En niveles 1–3, el dividendo también se limita a 20 para evitar cifras excesivas al principio. La dificultad y el límite son los mismos tanto en modalidad individual como combinada. El HUD muestra el máximo de cada nivel.
+
 - Las restas no producen resultados negativos; las divisiones siempre son exactas, sin cero en el divisor.
 - Una respuesta incorrecta resta del marcador global y del **marcador específico de la operación** el máximo entre 1 y la mitad entera de la opción incorrecta.
 - En pantalla se ven tanto el total como el subtotal por operación; la sección **Mi progreso** acumula los puntos netos por modalidad entre partidas. Los récords locales anteriores se conservan sin desglose histórico.
