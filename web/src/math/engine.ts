@@ -58,6 +58,18 @@ export function normalizeOperators(values: readonly string[]): Operator[] {
   return selected;
 }
 
+/**
+ * Límite inclusivo de las respuestas (y de las cinco opciones).
+ * Los niveles 1–3 trabajan hasta 10, luego crece por tramos de dos niveles.
+ * Se limita a 999 para que los números sigan cabiendo dentro de las estrellas.
+ */
+export function maxAnswerForLevel(level: number): number {
+  if (!Number.isInteger(level) || level < 1) throw new RangeError('Nivel inválido');
+  if (level <= 3) return 10;
+  if (level <= 7) return 10 + 5 * Math.ceil((level - 3) / 2);
+  return Math.min(999, 20 + 10 * Math.ceil((level - 7) / 2));
+}
+
 export class MathEngine {
   score = 0;
   lives = 3;
@@ -95,46 +107,65 @@ export class MathEngine {
 
   nextQuestion(): Question {
     const previous = this.question;
+    const limit = maxAnswerForLevel(this.level);
+    // En niveles avanzados predominan cifras acordes al rango desbloqueado.
+    const targetMinimum = limit <= 10 ? 0 : Math.floor(limit * 0.35);
     let left = 0;
     let right = 0;
     let operator: Operator = '+';
     let answer = 0;
 
-    for (let attempt = 0; attempt < 30; attempt++) {
+    for (let attempt = 0; attempt < 40; attempt++) {
       operator = this.selectedOperators[integer(this.random, 0, this.selectedOperators.length - 1)];
       switch (operator) {
         case '+':
-          left = integer(this.random, 1, 9);
-          right = integer(this.random, 1, 9);
-          answer = left + right;
+          answer = integer(this.random, 2, limit);
+          left = integer(this.random, 1, answer - 1);
+          right = answer - left;
           break;
         case '-':
-          left = integer(this.random, 1, 18);
-          right = integer(this.random, 0, left);
-          answer = left - right;
+          answer = integer(this.random, 0, limit);
+          left = integer(this.random, Math.max(1, answer), limit);
+          right = left - answer;
           break;
-        case '*':
-          left = integer(this.random, 1, 9);
-          right = integer(this.random, 1, 9);
+        case '*': {
+          // Dos factores reales, sin usar ×1, con producto dentro del rango.
+          const factorLimit = Math.min(
+            Math.floor(limit / 2),
+            Math.max(5, Math.ceil(Math.sqrt(limit) * 1.6)),
+          );
+          left = integer(this.random, 2, factorLimit);
+          right = integer(this.random, 2, Math.min(factorLimit, Math.floor(limit / left)));
           answer = left * right;
           break;
+        }
         case '/': {
-          // Producto construido de un cociente entero; sin cero ni decimales.
-          right = integer(this.random, 1, 9);
-          answer = integer(this.random, 1, 9);
+          // Cociente entero; divisores pequeños al inicio y mayores después.
+          const maxDivisor = limit <= 10
+            ? 3
+            : Math.min(12, 3 + Math.floor((this.level - 1) / 2));
+          right = integer(this.random, 2, maxDivisor);
+          const maxQuotient = limit <= 10
+            ? Math.min(limit, Math.floor(20 / right))
+            : limit;
+          answer = integer(this.random, 1, maxQuotient);
           left = right * answer;
           break;
         }
       }
-      if (!previous || previous.left !== left ||
-          previous.right !== right || previous.operator !== operator) break;
+
+      const isPrevious = previous && previous.left === left &&
+        previous.right === right && previous.operator === operator;
+      if (!isPrevious && answer >= targetMinimum) break;
     }
 
-    // Distractores próximos a la respuesta: funcionan incluso si es > 10.
-    const lower = Math.max(0, answer - 12);
+    // Nunca mostrar distractores superiores al máximo del nivel.
+    const radius = Math.max(5, Math.min(12, Math.floor(limit / 4)));
+    const lower = Math.max(0, answer - radius);
+    const upper = Math.min(limit, answer + radius);
     const distractors = shuffle(
-      Array.from({ length: answer + 13 - lower }, (_, i) => lower + i)
-        .filter((n) => n !== answer),
+      Array.from({ length: upper - lower + 1 }, (_, i) => lower + i)
+        .filter((number) => number !== answer),
       this.random,
     ).slice(0, 4);
 
