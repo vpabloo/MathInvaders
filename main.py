@@ -36,6 +36,8 @@ class Game:
         self.number_font = pygame.font.Font(str(font_path), 44)
         self.overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         self.overlay.fill((4, 7, 22, 190))
+        self.hud_panel = pygame.Surface((530, 112), pygame.SRCALPHA)
+        self.hud_panel.fill((0, 0, 0, 145))
         self.laser_sound = None
         if pygame.mixer.get_init():
             try:
@@ -163,12 +165,10 @@ class Game:
             ))
 
     def draw_hud(self):
-        panel = pygame.Surface((530, 112), pygame.SRCALPHA)
-        panel.fill((0, 0, 0, 145))
-        self.screen.blit(panel, (10, 10))
+        self.screen.blit(self.hud_panel, (10, 10))
         self.draw_text(self.engine.equation.label, 25, 18, font=self.big_font)
-        self.draw_text(f"Nivel: {self.engine.level}", WIDTH - 18, 10,
-                       centered=False)
+        level_label = self.font.render(f"Nivel: {self.engine.level}", True, WHITE)
+        self.screen.blit(level_label, (WIDTH - level_label.get_width() - 18, 10))
         # Alinear correctamente el marcador sin depender de su número de cifras.
         score_label = self.font.render(f"Puntos: {self.engine.score}", True, WHITE)
         self.screen.blit(score_label, (WIDTH - score_label.get_width() - 18, 49))
